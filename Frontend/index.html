@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResumeAI — Professional Resume Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">Resume<span>AI</span></div>
+  <div class="header-center" id="resume-name-display">Untitled Resume</div>
+  <div class="header-actions">
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('en',this)">EN</button>
+      <button class="lang-btn" onclick="setLang('hi',this)">HI</button>
+    </div>
+    <button class="hdr-btn" onclick="newResume()">＋ New</button>
+    <button class="hdr-btn save-btn" onclick="saveResume()">💾 Save</button>
+    <button class="hdr-btn load-btn" onclick="openLoadModal()">📂 My Resumes</button>
+    <button class="download-btn" onclick="downloadPDF()">⬇ PDF</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <div class="left-panel">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('personal',this)"><span class="ti">👤</span><span>Personal</span></button>
+      <button class="tab" onclick="switchTab('experience',this)"><span class="ti">💼</span><span>Experience</span></button>
+      <button class="tab" onclick="switchTab('education',this)"><span class="ti">🎓</span><span>Education</span></button>
+      <button class="tab" onclick="switchTab('skills',this)"><span class="ti">⚡</span><span>Skills</span></button>
+      <button class="tab" onclick="switchTab('more',this)"><span class="ti">➕</span><span>More</span></button>
+      <button class="tab" onclick="switchTab('templates',this)"><span class="ti">🎨</span><span>Templates</span></button>
+    </div>
+
+    <!-- PERSONAL TAB -->
+    <div id="tab-personal" class="tab-content active">
+      <div class="section-title">👤 Personal Information</div>
+      <div class="photo-upload-area">
+        <div class="photo-box" onclick="document.getElementById('photo-upload').click()">
+          <img id="photo-preview" src="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:8px">
+          <div id="photo-placeholder"><span style="font-size:1.8rem">📷</span><span>Upload Photo</span></div>
+          <div class="photo-overlay">Change</div>
+        </div>
+        <div class="photo-info">
+          <div class="photo-label">Profile Photo</div>
+          <div class="photo-sub">Used in Photo template</div>
+          <input type="file" id="photo-upload" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
+          <button class="small-btn" onclick="document.getElementById('photo-upload').click()">📷 Upload</button>
+          <button class="small-btn danger" onclick="removePhoto()">✕ Remove</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Resume Name (for saving)</label>
+        <input type="text" id="resume-title" placeholder="e.g. My Resume 2025" oninput="document.getElementById('resume-name-display').textContent=this.value||'Untitled Resume'">
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Full Name</label><input type="text" id="name" placeholder="Kajal Yadav" oninput="updatePreview()"></div>
+        <div class="form-group"><label>Job Title</label><input type="text" id="title" placeholder="Software Engineer" oninput="updatePreview()"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="you@email.com" oninput="updatePreview()"></div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="phone" placeholder="+91 9876543210" oninput="updatePreview()"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>LinkedIn</label><input type="text" id="linkedin" placeholder="linkedin.com/in/you" oninput="updatePreview()"></div>
+        <div class="form-group"><label>Location</label><input type="text" id="location" placeholder="Mumbai, India" oninput="updatePreview()"></div>
+      </div>
+      <div class="form-group">
+        <label>Professional Summary</label>
+        <textarea id="summary" rows="3" placeholder="Brief professional summary..." oninput="updatePreview()"></textarea>
+        <button class="ai-btn" onclick="generateSummary(this)"><div class="spinner"></div><span>✨ AI Generate</span></button>
+      </div>
+      <div class="section-title" style="margin-top:14px">🌐 Languages</div>
+      <div id="languages-container"></div>
+      <button class="add-btn" onclick="addLanguage()">+ Add Language</button>
+    </div>
+
+    <!-- EXPERIENCE TAB -->
+    <div id="tab-experience" class="tab-content">
+      <div class="section-title">💼 Work Experience</div>
+      <div id="experience-container"></div>
+      <button class="add-btn" onclick="addExperience()">+ Add Experience</button>
+    </div>
+
+    <!-- EDUCATION TAB -->
+    <div id="tab-education" class="tab-content">
+      <div class="section-title">🎓 Education</div>
+      <div id="education-container"></div>
+      <button class="add-btn" onclick="addEducation()">+ Add Education</button>
+    </div>
+
+    <!-- SKILLS TAB -->
+    <div id="tab-skills" class="tab-content">
+      <div class="section-title">⚡ Skills</div>
+      <div class="form-group">
+        <label>Skills (comma separated)</label>
+        <textarea id="skills" rows="3" placeholder="JavaScript, React, Python..." oninput="updatePreview()"></textarea>
+        <button class="ai-btn" onclick="generateSkills(this)"><div class="spinner"></div><span>✨ AI Suggest</span></button>
+      </div>
+      <div class="section-title" style="margin-top:14px">📁 Projects</div>
+      <div id="projects-container"></div>
+      <button class="add-btn" onclick="addProject()">+ Add Project</button>
+    </div>
+
+    <!-- MORE TAB -->
+    <div id="tab-more" class="tab-content">
+      <div class="section-title">🎯 Objective</div>
+      <div class="form-group">
+        <textarea id="objective" rows="4" placeholder="To gain a challenging role where I can utilize my skills..." oninput="updatePreview()"></textarea>
+        <button class="ai-btn" onclick="generateObjective(this)"><div class="spinner"></div><span>✨ AI Generate</span></button>
+      </div>
+
+      <div class="section-title" style="margin-top:16px">🏆 Achievements & Awards</div>
+      <div id="achievements-container"></div>
+      <button class="add-btn" onclick="addAchievement()">+ Add Achievement</button>
+
+      <div class="section-title" style="margin-top:16px">🎨 Interests / Hobbies</div>
+      <div class="form-group">
+        <input type="text" id="interests" placeholder="Art and crafts, painting, sports..." oninput="updatePreview()">
+      </div>
+
+      <div class="section-title" style="margin-top:16px">📍 Location Details</div>
+      <div class="form-group">
+        <label>Current Address</label>
+        <input type="text" id="loc_current" placeholder="Guru Kashi University, Bathinda, Punjab" oninput="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>Permanent Address</label>
+        <input type="text" id="loc_permanent" placeholder="Goriya Asthan, Beyapur, Patna 801503" oninput="updatePreview()">
+      </div>
+    </div>
+
+    <!-- TEMPLATES TAB -->
+    <div id="tab-templates" class="tab-content">
+      <div class="section-title">🎨 Choose Template</div>
+      <div class="template-grid" id="template-grid"></div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="preview-toolbar">
+      <span>📄 Live Preview</span>
+      <div style="display:flex;gap:6px;margin-left:auto;align-items:center">
+        <button class="zoom-btn" onclick="zoomOut()">－</button>
+        <span id="zoom-label" style="font-size:0.78rem;color:#666;min-width:36px;text-align:center">100%</span>
+        <button class="zoom-btn" onclick="zoomIn()">＋</button>
+      </div>
+    </div>
+    <div id="resume-wrapper">
+      <div id="resume-paper"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LOAD MODAL -->
+<div class="modal-overlay" id="load-modal" style="display:none" onclick="if(event.target===this)closeLoadModal()">
+  <div class="modal">
+    <div class="modal-title">📂 My Saved Resumes</div>
+    <div id="saved-list"></div>
+    <button class="modal-btn" onclick="closeLoadModal()">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="script.js"></script>
+</body>
+</html>
